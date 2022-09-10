@@ -1,0 +1,467 @@
+SELECT address.id, address.username, address.state_id, address.city_id, address.email, address.address,address.country_id,cities.name AS cities_name,state.name AS state_name FROM `address` LEFT JOIN cities on address.city_id = cities.id LEFT JOIN state on address.state_id = state.id
+
+
+
+
+////update data
+
+
+
+
+
+
+
+<?php
+include "connection.php";
+include "function.php";
+ini_set("display_errors", 1);
+ini_set("display_startup_errors", 1);
+error_reporting(E_ALL);
+
+$is_valid = true;
+$connectObj = new database();
+$con = $connectObj->connect();
+
+$updateObj = new state();
+$row = $updateObj->address();
+
+$address_name = isset($row["username"]) ? $row["username"] : "";
+$address_email = isset($row["email"]) ? $row["email"] : "";
+$addres_data = isset($row["address"]) ? $row["address"] : "";
+$addres_state_id = isset($row["state_id"]) ? $row["state_id"] : "";
+$addres_city_id = isset($row["city_id"]) ? $row["city_id"] : "";
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $is_valid = true;
+    if (empty($_POST["username"]) || $_POST["username"] == "") {
+         $is_valid = false;
+        $error = "username fild is empty";
+        $address_name = "";
+    } else {
+        $address_name = $_POST["username"];
+    }
+    
+    if (empty($_POST["email"]) || $_POST["email"] == "") {
+        $is_valid = false;
+        $email_error = "email fild is empty";
+        $address_email = "";
+    } else {
+        $address_email = $_POST["email"];
+        if (!filter_var($address_email, FILTER_VALIDATE_EMAIL)) {
+         $is_valid = false;
+         $email_error = "Invalid email format";
+        }
+         
+    }
+
+    if (empty($_POST["address"]) || $_POST["address"] == "") {
+        $is_valid = false;
+        $address_error = "address fild is empty";
+        $addres_data = "";
+    } else {
+        $addres_data = $_POST["address"]
+        ;
+    }
+
+    if (empty($_POST["state_id"]) || $_POST["state_id"] == "") {
+        $is_valid = false;
+        $state_id_error = "state_id fild is empty";
+        $addres_state_id = "";
+    } else {
+        $addres_state_id = $_POST["state_id"];
+    }
+
+    if (empty($_POST["city_id"]) || $_POST["city_id"] == "") {
+       $is_valid = false;
+        $city_id_error = "city_id fild is empty";
+        $addres_city_id = "";
+    } else {
+        $addres_city_id = $_POST["city_id"];
+    }
+
+
+    if (empty($_POST["country_id"]) || $_POST["country_id"] == "") {
+        $is_valid = false;
+        $country_id_error = "country_id fild is empty";
+        $addres_country_id = "";
+    } else {
+        $addres_country_id = $_POST["country_id"];
+    }
+
+
+    if ($is_valid) { 
+             $updateObj = new state();
+             $updatedata = $updateObj->updaterecord();
+        }
+        }
+        
+    $country = $updateObj->address_country();
+    $state_address = $updateObj->address_state();
+    //$city_address = $updateObj->address_city($addres_state_id);
+?>
+<html>
+   <head>
+      <title>Edit</title>
+      <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+      <script src="https://code.jquery.com/jquery-3.6.0.js"></script> 
+   </head>
+   <body>
+      <div style="display: flex;align-items: center;justify-content: center;">
+         <form class="bg-info w-50 p-5 mt-5" method="post" id="form">
+            <div>
+               <button class="btn btn-success"> <a style="color:black;" href="index.php">Go Back</a></button>
+            </div>
+            <div class="container">
+               <div class="row">
+                  <div class="col-md-3"></div>
+                  <div class="col-md-6">
+                     <div class="form-group">
+                        <label>Name</label>
+                        <input class="form-control" type="text" name="username"  placeholder="Name" value="<?php echo $address_name; ?>">
+                        <span style="color:red;">
+                         <?php if (!empty($error)) {
+                             echo $error;
+                         } ?>
+                        </span>
+                     </div>
+                     <div class="form-group">
+                        <label>Country</label>
+                       <select name='country_id' id='country_id'  class='form-control'>
+                         <!--  <option>select country</option> -->
+                                  <?php if ($country) {
+                            
+                            // output data of each row
+                              foreach ($country as $row_country) {
+                                $selected = "";
+                                if ($row_country["id"] == $country) {
+                                    $selected = 'selected = "selected"';
+                                   
+                                }
+                                ?>
+                                       <option value="<?php echo $row_country[
+                                           "id"
+                                       ]; ?>" <?php echo $selected; ?>><?php echo $row_country[
+                                         "name"
+                                      ]; ?></option>
+                                       <?php
+                            }
+                        } else {
+                            echo "0 results";
+                        } ?>
+
+                       </select>    
+                     </div>
+
+                     <div class="form-group">
+                        <label>State_id</label>
+                        <select name='state_id' id="state_id"  class='form-control'>
+                           <?php if ($state_address) {
+                               // output data of each row
+                               foreach ($state_address as $data) {
+                                   $selected = "";
+                                   if ($data["id"] == $addres_state_id) {
+                                       $selected = 'selected = "selected"';
+                                   }
+                                   ?>
+                           <option value="<?php echo $data[
+                               "id"
+                           ]; ?>" <?php echo $selected; ?>><?php echo $data[
+                               "name"
+                           ]; ?></option>
+                           <?php
+                               }
+                           } else {
+                               echo "0 results";
+                           } ?>
+                        </select>
+                        <span style="color:red;">
+                        <?php if (!empty($state_error)) {
+                            echo $state_error;
+                        } ?>
+                        </span>
+                     </div>
+                     <div class="form-group">
+                        <label>City_id</label>
+                        <select name='city_id' id="city"  class='form-control'>
+                           <?php if ($city_address) {
+                               foreach ($city_address as $row1) {
+                                   $selected = "";
+                                   if ($addres_city_id == $row1["id"]) {
+                                       $selected = 'selected = "selected"';
+                                   }
+                                   ?>
+                           <option value="<?php echo $row1[
+                               "id"
+                           ]; ?>" <?php echo $selected; ?>><?php echo $row1[
+                               "name"
+                           ]; ?></option>
+                           <?php
+                               }
+                           } else {
+                               echo "0 results";
+                           } ?> 
+                        </select>
+                        <span style="color:red;"> <?php if (
+                            !empty($city_error)
+                        ) {
+                            echo $city_error;
+                        } ?> </span> 
+                     </div>
+                     <div class="form-group">
+                      <label>Email</label>
+                      
+                        <input class="form-control" type="text"
+                           name="email"  placeholder="email"
+                           value="<?php echo $address_email; ?>"> 
+
+                           <span
+                           style="color:red;"> <?php if (!empty($email_error)) {
+                               echo $email_error;
+                           } ?>
+                        </span> 
+                     </div>
+                     <div class="form-group">
+                        <label>Address</label> 
+                        <input class="form-control" type="text" name="address"  placeholder="address" value="<?php echo $addres_data; ?>"> <span style="color:red;"> <?php if (
+                            !empty($address_error)
+                        ) {
+                            echo $address_error;
+                        } ?>
+                            </span> 
+                     </div>
+                     <div>
+                        <input class="btn btn-warning" type="submit"
+                           name="update" value="Update"> 
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </form>
+      </div>
+   </body>
+</html>
+<script type="text/javascript"> $
+   (document).ready(function() { $
+   ('#state_id').on('change', function() { var
+   state_id = $(this).val();
+   
+   $.ajax({
+   url: "ajax.php",
+   type: "POST",
+   data: {
+   id: state_id
+   },
+   cache: 'false',
+   dataType:"html",
+   success: function(data){
+   //console.log(data);
+   $("#city").html(data);
+   
+   }
+   });
+   });
+
+
+
+ $('#country_id').on('change', function() {
+            var country_id = $(this).val();
+            $.ajax({
+                url: "ajax.php",
+                type: "POST",
+                data: {
+                    id: country_id
+                },
+                cache: 'false',
+                dataType:"html",
+                success: function(data){
+                    $("#state_id").html(data);
+                }
+            });
+    });
+
+
+   });
+   
+   
+</script>
+
+
+
+
+ 
+ SELECT address.id, address.username, address.state_id, address.city_id, address.email, address.address,cities.name AS     cities_name,state.name AS state_name
+                   FROM `address` LEFT JOIN cities on address.city_id = cities.id LEFT JOIN state on address.state_id = state.id
+
+
+
+
+ <?php  
+                          if ($country_result->num_rows > 0) {
+                           while($row_country = $country_result->fetch_assoc()) {  
+                                echo "<option value=".$row_country['id'].">".$row_country['name']."</option>"; 
+                            }
+                            } else {
+                            echo "0 results";
+                            }
+
+
+
+
+
+
+    // $sql_country = "SELECT * from country where status='Active'";
+    // $country_result = mysqli_query($con,$sql_country);   
+
+
+
+
+            jQuery.ajax({
+                type: "POST",
+                url: "<?php echo $save_product_url; ?>",
+                data: {postdata:<?php echo json_encode($saveProduct); ?>},
+
+
+
+
+
+
+<br /><b>Warning</b>:  Trying to access array offset on value of type null in <b>/samba/admin/altaf/state_address/update.php</b> on line <b>80</b><br />
+
+1.//insert data
+2.select query work
+// $result="";
+// $s = 1;
+//  $sql = "SELECT address.id, address.username, address.state_id, address.city_id, address.email, address.address,cities.name AS cities_name,state.name AS state_name
+//             FROM `address` 
+//             LEFT JOIN cities
+//             on address.city_id = cities.id
+//             LEFT JOIN state
+//             on address.state_id = state.id";
+// $result=mysqli_query($con,$sql);
+
+
+3. update data
+
+
+   <?php if (isset($_POST["update"])) {
+
+       $username = $_POST["username"];
+       $state_id = $_POST["state_id"];
+       $city_id = $_POST["city_id"];
+       $email = $_POST["email"];
+       $address = $_POST["address"];
+
+       if (
+           $username == "" or
+           $state_id == "" or
+           $city_id == "" or
+           $email == "" or
+           $address == ""
+       ) { ?>
+<script>alert('All Fild Are Required');</script>
+<?php } else {
+           $sql = "UPDATE `address` SET `username`='$username',`state_id`='$state_id',`city_id`='$city_id',`email`='$email',`address`='$address' WHERE id='$how'";
+           mysqli_query($con, $sql);
+           ?>
+<script>alert('User Update Successfully');</script>
+<?php }
+       ?>
+<?php
+   } ?>
+      
+
+
+
+
+$("#state_id").on("change", function() {
+var state_id = $("#state_id").val();
+var city = '<?php if (isset($_POST["city_id"])) {
+    echo $_POST["city_id"];
+} ?>';
+if (state_id != "") {
+city(state_id, city_id);
+} else {
+$("#city_id").html('
+<option value="">Select_city</option>
+');
+}
+})
+city(<?php echo $city; ?>, <?php echo $city; ?>);
+});
+
+
+
+
+
+
+
+select state 
+
+
+
+ //if ($result->num_rows > 0) {
+               // output data of each row
+               // while($row = $result->fetch_assoc()) { 
+                 //$selected="";
+                    //if ($state_id == $row['id']) {
+                       // $selected = 'selected = "selected"';
+                      //} 
+                //<option value="<?php echo $data[
+                    "id"
+                ]; ?>" //<?php echo $selected; ?>><?php echo $data[
+    "name"
+]; ?></option>
+                 //<option value="<?php echo $row[
+                     "id"
+                 ]; ?>" <?php echo $selected; ?>><?php echo $row[
+    "name"
+]; ?></option>; 
+                 }
+                 } else {
+                 echo "0 results";
+                 }
+
+
+
+city.php
+
+
+
+    
+    // if ($result->num_rows > 0) {
+    //     // output data of each row
+    //     while($row = $result->fetch_assoc()) {
+
+            
+            
+    //     //if($state_id == $row['state_id']) {
+    //     echo "<option value=".$row['id'].">".$row['name']."</option>"; 
+    //    //}
+
+    //     }
+    //    } 
+
+
+
+
+
+
+
+
+
+
+    delete
+
+
+     echo $deletedata;
+   
+   if($deletedata){
+       header('location:index.php');
+   }else{
+       $message =$deletedata['message'];
+   }
+   ?>
+<script src="https://unpkg.com/sweetalert/dist/sweetalert.min.js"></script>
+<script type="text/javascript">
+   alert("You are Sure Delete Record");
+</script>
